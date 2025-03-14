@@ -1,9 +1,10 @@
 # Accessing the module QtWidgets from the PyQt6 library and the module has
 # several classes like QApplication, QVBoxLayout
 from PyQt6.QtWidgets import (QApplication, QLabel, QWidget,
-                             QGridLayout, QLineEdit, QPushButton, QMainWindow, QTableWidget)
+                             QGridLayout, QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem)
 from PyQt6.QtGui import QAction
 import sys
+import sqlite3
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -22,10 +23,18 @@ class MainWindow(QMainWindow):
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(("Id", "Name", "Course", "Mobile"))
+        self.table.verticalHeader().setVisible(False)
         self.setCentralWidget(self.table)
 
     def load_data(self):
-        self.table
+        connection = sqlite3.connect("database.db")
+        result = connection.execute("SELECT * FROM students")
+        self.table.setRowCount(0)
+        for row_number, row_data in enumerate(result):
+            self.table.insertRow(row_number)
+            for column_number, data in enumerate(row_data):
+                self.table.setItem(row_number, column_number, QTableWidgetItem(str(data)))
+        connection.close()
 
 
 
@@ -33,4 +42,5 @@ app = QApplication(sys.argv)
 # Constructing QWidget AgeCalculator which is a child of QWidget
 age_calculator = MainWindow()
 age_calculator.show()
+age_calculator.load_data()
 sys.exit(app.exec())
