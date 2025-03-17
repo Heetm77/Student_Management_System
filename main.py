@@ -6,8 +6,8 @@ from tkinter.font import names
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QLabel, QWidget,
                              QGridLayout, QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, QDialog,
-                             QVBoxLayout, QComboBox)
-from PyQt6.QtGui import QAction
+                             QVBoxLayout, QComboBox, QToolBar)
+from PyQt6.QtGui import QAction, QIcon
 import sys
 import sqlite3
 
@@ -16,13 +16,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Student Management System")
+        self.setMinimumSize(800,600)
 
         file_menu_item = self.menuBar().addMenu("&File")
         help_menu_item = self.menuBar().addMenu("&Help")
         edit_menu_item = self.menuBar().addMenu("&Edit")
 
         # Add student is a sub menu item
-        add_student_action = QAction("Add Student", self)
+        add_student_action = QAction(QIcon("icons/icons/add.png"),"Add Student", self)
         # triggered is the property of QAction instance
         add_student_action.triggered.connect(self.insert)
         file_menu_item.addAction(add_student_action)
@@ -31,7 +32,7 @@ class MainWindow(QMainWindow):
         help_menu_item.addAction(about_action)
 
         # Add search is a sub menu item of Edit menu item
-        add_search_action = QAction("Search", self)
+        add_search_action = QAction(QIcon("icons/icons/search.png"),"Search", self)
         edit_menu_item.addAction(add_search_action)
         add_search_action.triggered.connect(self.search_student)
 
@@ -41,6 +42,13 @@ class MainWindow(QMainWindow):
         self.table.setHorizontalHeaderLabels(("Id", "Name", "Course", "Mobile"))
         self.table.verticalHeader().setVisible(False)
         self.setCentralWidget(self.table)
+
+        # Create toolbar and add toolbar elements
+        toolbar = QToolBar()
+        self.addToolBar(toolbar)
+
+        toolbar.addAction(add_student_action)
+        toolbar.addAction(add_search_action)
 
     def load_data(self):
         connection = sqlite3.connect("database.db")
@@ -113,7 +121,7 @@ class InsertDialog(QDialog):
 
 class SearchDialog(QDialog):
     def __init__(self):
-        super.__init__()
+        super().__init__()
 
         # set the window title
         self.setWindowTitle("Search Student")
