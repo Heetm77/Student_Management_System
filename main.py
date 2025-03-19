@@ -1,8 +1,6 @@
 # Accessing the module QtWidgets from the PyQt6 library and the module has
 # several classes like QApplication, QVBoxLayout
-from idlelib.search import SearchDialog
-from tkinter.font import names
-
+import traceback
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QApplication, QLabel, QWidget,
                              QGridLayout, QLineEdit, QPushButton, QMainWindow, QTableWidget, QTableWidgetItem, QDialog,
@@ -10,7 +8,6 @@ from PyQt6.QtWidgets import (QApplication, QLabel, QWidget,
 from PyQt6.QtGui import QAction, QIcon
 import sys
 import sqlite3
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -101,7 +98,65 @@ class MainWindow(QMainWindow):
 
 
 class EditDialog(QDialog):
-    pass
+    def __init__(self):
+        super().__init__()
+        # self refers to the InsertDialog Instance
+        self.setWindowTitle("Update Student Data")
+        self.setFixedWidth(300)
+        self.setFixedHeight(300)
+
+        layout = QVBoxLayout()
+
+        # Get the student name from the selected row
+        index = main_window.table.currentRow()
+        student_name = main_window.table.item(index, 1).text()
+
+        # Get Id from selected row
+        self.student_id = main_window.table.item(index, 0).text()
+
+        # Create the widgets
+        # Add student name widget
+        self.student_name = QLineEdit(student_name)
+        self.student_name.setPlaceholderText("Name")
+        layout.addWidget(self.student_name)
+
+        # Add combo box of courses
+        course_name = main_window.table.item(index, 2).text()
+        self.course_name = QComboBox()
+        courses = ["Biology", "Math", "Astronomy", "Physics"]
+
+        # self.course_name represents the combo box
+        self.course_name.addItems(courses)
+        self.course_name.setCurrentText(course_name)
+        layout.addWidget(self.course_name)
+
+        # Add mobile widget
+        mobile_number = main_window.table.item(index, 3).text()
+        self.mobile_number = QLineEdit(mobile_number)
+        self.mobile_number.setPlaceholderText("Mobile")
+        layout.addWidget(self.mobile_number)
+
+        # Add a submit button
+        button = QPushButton("Update")
+        button.clicked.connect(self.update_student)
+        layout.addWidget(button)
+
+        self.setLayout(layout)
+
+    def update_student(self):
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+                       (self.student_name.text(),
+                        self.course_name.itemText(self.course_name.currentIndex()),
+                        self.mobile_number.text(),
+                        self.student_id))
+        connection.commit()
+        cursor.close()
+        connection.close()
+
+        # Refresh the table
+        main_window.load_data()
 
 
 class DeleteDialog(QDialog):
